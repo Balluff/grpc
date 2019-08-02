@@ -30,11 +30,13 @@ set(PACKAGE_TARNAME   "${PACKAGE_NAME}-${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "https://github.com/grpc/grpc/issues/")
 project(${PACKAGE_NAME} C CXX)
 
-set(gRPC_INSTALL_BINDIR "bin" CACHE STRING "Installation directory for executables")
-set(gRPC_INSTALL_LIBDIR "lib" CACHE STRING "Installation directory for libraries")
-set(gRPC_INSTALL_INCLUDEDIR "include" CACHE STRING "Installation directory for headers")
-set(gRPC_INSTALL_CMAKEDIR "lib/cmake/${PACKAGE_NAME}" CACHE STRING "Installation directory for cmake config files")
-set(gRPC_INSTALL_SHAREDIR "share/grpc" CACHE STRING "Installation directory for root certificates")
+include(GNUInstallDirs)
+
+set(gRPC_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}" CACHE STRING "Installation directory for executables")
+set(gRPC_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}" CACHE STRING "Installation directory for libraries")
+set(gRPC_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}" CACHE STRING "Installation directory for headers")
+set(gRPC_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}" CACHE STRING "Installation directory for cmake config files")
+set(gRPC_INSTALL_SHAREDIR "${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE_NAME}" CACHE STRING "Installation directory for root certificates")
 
 # Options
 option(gRPC_BUILD_TESTS "Build tests" OFF)
@@ -741,6 +743,7 @@ add_library(address_sorting
   third_party/address_sorting/address_sorting_posix.c
   third_party/address_sorting/address_sorting_windows.c
 )
+set_target_properties(address_sorting PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(address_sorting PROPERTIES COMPILE_PDB_NAME "address_sorting"
@@ -748,6 +751,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/address_sorting.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -780,7 +784,14 @@ target_link_libraries(address_sorting
 
 
 if (gRPC_INSTALL)
+  get_target_property(address_sorting_TYPE address_sorting TYPE)
+  if("${address_sorting_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(address_sorting_COMPONENT "Library")
+  else()
+    set(address_sorting_COMPONENT "Devel")
+  endif()
   install(TARGETS address_sorting EXPORT gRPCTargets
+    COMPONENT ${address_sorting_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -793,6 +804,7 @@ add_library(alts_test_util
   test/core/tsi/alts/crypt/gsec_test_util.cc
   test/core/tsi/alts/handshaker/alts_handshaker_service_api_test_lib.cc
 )
+set_target_properties(alts_test_util PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(alts_test_util PROPERTIES COMPILE_PDB_NAME "alts_test_util"
@@ -800,6 +812,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/alts_test_util.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -874,6 +887,7 @@ add_library(gpr
   src/core/lib/profiling/basic_timers.cc
   src/core/lib/profiling/stap_timers.cc
 )
+set_target_properties(gpr PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(gpr PROPERTIES COMPILE_PDB_NAME "gpr"
@@ -881,6 +895,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/gpr.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -951,13 +966,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(gpr_TYPE gpr TYPE)
+  if("${gpr_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(gpr_COMPONENT "Library")
+  else()
+    set(gpr_COMPONENT "Devel")
+  endif()
   install(TARGETS gpr EXPORT gRPCTargets
+    COMPONENT ${gpr_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -1295,6 +1318,7 @@ add_library(grpc
   src/core/ext/filters/workarounds/workaround_utils.cc
   src/core/plugin_registry/grpc_plugin_registry.cc
 )
+set_target_properties(grpc PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc PROPERTIES COMPILE_PDB_NAME "grpc"
@@ -1302,6 +1326,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -1377,13 +1402,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc_TYPE grpc TYPE)
+  if("${grpc_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc_COMPONENT "Library")
+  else()
+    set(grpc_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc EXPORT gRPCTargets
+    COMPONENT ${grpc_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -1687,6 +1720,7 @@ add_library(grpc_cronet
   src/core/tsi/transport_security_grpc.cc
   src/core/plugin_registry/grpc_cronet_plugin_registry.cc
 )
+set_target_properties(grpc_cronet PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_cronet PROPERTIES COMPILE_PDB_NAME "grpc_cronet"
@@ -1694,6 +1728,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_cronet.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -1758,13 +1793,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc_cronet_TYPE grpc_cronet TYPE)
+  if("${grpc_cronet_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc_cronet_COMPONENT "Library")
+  else()
+    set(grpc_cronet_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc_cronet EXPORT gRPCTargets
+    COMPONENT ${grpc_cronet_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -2014,6 +2057,7 @@ add_library(grpc_test_util
   src/core/ext/filters/http/message_compress/message_compress_filter.cc
   src/core/ext/filters/http/server/http_server_filter.cc
 )
+set_target_properties(grpc_test_util PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_test_util PROPERTIES COMPILE_PDB_NAME "grpc_test_util"
@@ -2021,6 +2065,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_test_util.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -2095,6 +2140,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -2338,6 +2384,7 @@ add_library(grpc_test_util_unsecure
   src/core/ext/filters/http/message_compress/message_compress_filter.cc
   src/core/ext/filters/http/server/http_server_filter.cc
 )
+set_target_properties(grpc_test_util_unsecure PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_test_util_unsecure PROPERTIES COMPILE_PDB_NAME "grpc_test_util_unsecure"
@@ -2345,6 +2392,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_test_util_unsecure.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -2419,6 +2467,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -2679,6 +2728,7 @@ add_library(grpc_unsecure
   src/core/ext/filters/workarounds/workaround_utils.cc
   src/core/plugin_registry/grpc_unsecure_plugin_registry.cc
 )
+set_target_properties(grpc_unsecure PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_unsecure PROPERTIES COMPILE_PDB_NAME "grpc_unsecure"
@@ -2686,6 +2736,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_unsecure.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -2759,13 +2810,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc_unsecure_TYPE grpc_unsecure TYPE)
+  if("${grpc_unsecure_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc_unsecure_COMPONENT "Library")
+  else()
+    set(grpc_unsecure_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc_unsecure EXPORT gRPCTargets
+    COMPONENT ${grpc_unsecure_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -2777,6 +2836,7 @@ if (gRPC_BUILD_TESTS)
 add_library(reconnect_server
   test/core/util/reconnect_server.cc
 )
+set_target_properties(reconnect_server PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(reconnect_server PROPERTIES COMPILE_PDB_NAME "reconnect_server"
@@ -2784,6 +2844,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/reconnect_server.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -2823,6 +2884,7 @@ if (gRPC_BUILD_TESTS)
 add_library(test_tcp_server
   test/core/util/test_tcp_server.cc
 )
+set_target_properties(test_tcp_server PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(test_tcp_server PROPERTIES COMPILE_PDB_NAME "test_tcp_server"
@@ -2830,6 +2892,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/test_tcp_server.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -2912,6 +2975,7 @@ add_library(grpc++
   third_party/nanopb/pb_encode.c
   src/cpp/codegen/codegen_init.cc
 )
+set_target_properties(grpc++ PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++ PROPERTIES COMPILE_PDB_NAME "grpc++"
@@ -2919,6 +2983,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3181,13 +3246,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc++_TYPE grpc++ TYPE)
+  if("${grpc++_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc++_COMPONENT "Library")
+  else()
+    set(grpc++_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc++ EXPORT gRPCTargets
+    COMPONENT ${grpc++_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -3204,6 +3277,7 @@ add_library(grpc++_core_stats
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/core/stats.grpc.pb.h
   src/cpp/util/core_stats.cc
 )
+set_target_properties(grpc++_core_stats PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_core_stats PROPERTIES COMPILE_PDB_NAME "grpc++_core_stats"
@@ -3211,6 +3285,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_core_stats.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3505,6 +3580,7 @@ add_library(grpc++_cronet
   src/core/ext/transport/chttp2/server/chttp2_server.cc
   src/core/ext/filters/census/grpc_context.cc
 )
+set_target_properties(grpc++_cronet PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_cronet PROPERTIES COMPILE_PDB_NAME "grpc++_cronet"
@@ -3512,6 +3588,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_cronet.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3770,13 +3847,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc++_cronet_TYPE grpc++_cronet TYPE)
+  if("${grpc++_cronet_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc++_cronet_COMPONENT "Library")
+  else()
+    set(grpc++_cronet_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc++_cronet EXPORT gRPCTargets
+    COMPONENT ${grpc++_cronet_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -3792,6 +3877,7 @@ add_library(grpc++_error_details
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.h
   src/cpp/util/error_details.cc
 )
+set_target_properties(grpc++_error_details PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_error_details PROPERTIES COMPILE_PDB_NAME "grpc++_error_details"
@@ -3799,6 +3885,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_error_details.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3835,6 +3922,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -3843,7 +3931,14 @@ endif (gRPC_BUILD_CODEGEN)
 if (gRPC_BUILD_CODEGEN)
 
 if (gRPC_INSTALL)
+  get_target_property(grpc++_error_details_TYPE grpc++_error_details TYPE)
+  if("${grpc++_error_details_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc++_error_details_COMPONENT "Library")
+  else()
+    set(grpc++_error_details_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc++_error_details EXPORT gRPCTargets
+    COMPONENT ${grpc++_error_details_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -3861,6 +3956,7 @@ add_library(grpc++_proto_reflection_desc_db
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.grpc.pb.h
 )
+set_target_properties(grpc++_proto_reflection_desc_db PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_proto_reflection_desc_db PROPERTIES COMPILE_PDB_NAME "grpc++_proto_reflection_desc_db"
@@ -3868,6 +3964,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_proto_reflection_desc_db.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3909,6 +4006,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -3925,6 +4023,7 @@ add_library(grpc++_reflection
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.grpc.pb.h
 )
+set_target_properties(grpc++_reflection PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_reflection PROPERTIES COMPILE_PDB_NAME "grpc++_reflection"
@@ -3932,6 +4031,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_reflection.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -3968,6 +4068,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -3976,7 +4077,14 @@ endif (gRPC_BUILD_CODEGEN)
 if (gRPC_BUILD_CODEGEN)
 
 if (gRPC_INSTALL)
+  get_target_property(grpc++_reflection_TYPE grpc++_reflection TYPE)
+  if("${grpc++_reflection_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc++_reflection_COMPONENT "Library")
+  else()
+    set(grpc++_reflection_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc++_reflection EXPORT gRPCTargets
+    COMPONENT ${grpc++_reflection_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -3989,6 +4097,7 @@ if (gRPC_BUILD_TESTS)
 add_library(grpc++_test_config
   test/cpp/util/test_config_cc.cc
 )
+set_target_properties(grpc++_test_config PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_test_config PROPERTIES COMPILE_PDB_NAME "grpc++_test_config"
@@ -3996,6 +4105,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_test_config.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4066,6 +4176,7 @@ add_library(grpc++_test_util
   test/cpp/util/test_credentials_provider.cc
   src/cpp/codegen/codegen_init.cc
 )
+set_target_properties(grpc++_test_util PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_test_util PROPERTIES COMPILE_PDB_NAME "grpc++_test_util"
@@ -4073,6 +4184,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_test_util.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4227,6 +4339,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -4265,6 +4378,7 @@ add_library(grpc++_test_util_unsecure
   test/cpp/util/subprocess.cc
   src/cpp/codegen/codegen_init.cc
 )
+set_target_properties(grpc++_test_util_unsecure PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_test_util_unsecure PROPERTIES COMPILE_PDB_NAME "grpc++_test_util_unsecure"
@@ -4272,6 +4386,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_test_util_unsecure.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4423,6 +4538,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -4473,6 +4589,7 @@ add_library(grpc++_unsecure
   third_party/nanopb/pb_encode.c
   src/cpp/codegen/codegen_init.cc
 )
+set_target_properties(grpc++_unsecure PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc++_unsecure PROPERTIES COMPILE_PDB_NAME "grpc++_unsecure"
@@ -4480,6 +4597,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_unsecure.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4735,13 +4853,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc++_unsecure_TYPE grpc++_unsecure TYPE)
+  if("${grpc++_unsecure_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc++_unsecure_COMPONENT "Library")
+  else()
+    set(grpc++_unsecure_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc++_unsecure EXPORT gRPCTargets
+    COMPONENT ${grpc++_unsecure_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -4753,6 +4879,7 @@ if (gRPC_BUILD_TESTS)
 add_library(grpc_benchmark
   test/cpp/microbenchmarks/helpers.cc
 )
+set_target_properties(grpc_benchmark PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_benchmark PROPERTIES COMPILE_PDB_NAME "grpc_benchmark"
@@ -4760,6 +4887,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_benchmark.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4809,6 +4937,7 @@ add_library(grpc_cli_libs
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/reflection/v1alpha/reflection.grpc.pb.h
 )
+set_target_properties(grpc_cli_libs PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_cli_libs PROPERTIES COMPILE_PDB_NAME "grpc_cli_libs"
@@ -4816,6 +4945,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_cli_libs.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4858,6 +4988,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -4874,6 +5005,7 @@ add_library(grpc_plugin_support
   src/compiler/python_generator.cc
   src/compiler/ruby_generator.cc
 )
+set_target_properties(grpc_plugin_support PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_plugin_support PROPERTIES COMPILE_PDB_NAME "grpc_plugin_support"
@@ -4881,6 +5013,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_plugin_support.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4913,13 +5046,21 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc_plugin_support_TYPE grpc_plugin_support TYPE)
+  if("${grpc_plugin_support_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc_plugin_support_COMPONENT "Library")
+  else()
+    set(grpc_plugin_support_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc_plugin_support EXPORT gRPCTargets
+    COMPONENT ${grpc_plugin_support_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -4936,6 +5077,7 @@ add_library(grpcpp_channelz
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/channelz/channelz.pb.h
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/channelz/channelz.grpc.pb.h
 )
+set_target_properties(grpcpp_channelz PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpcpp_channelz PROPERTIES COMPILE_PDB_NAME "grpcpp_channelz"
@@ -4943,6 +5085,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpcpp_channelz.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -4979,6 +5122,7 @@ foreach(_hdr
   string(REPLACE "include/" "" _path ${_hdr})
   get_filename_component(_path ${_path} PATH)
   install(FILES ${_hdr}
+    COMPONENT Devel
     DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
   )
 endforeach()
@@ -4987,7 +5131,14 @@ endif (gRPC_BUILD_CODEGEN)
 if (gRPC_BUILD_CODEGEN)
 
 if (gRPC_INSTALL)
+  get_target_property(grpcpp_channelz_TYPE grpcpp_channelz TYPE)
+  if("${grpcpp_channelz_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpcpp_channelz_COMPONENT "Library")
+  else()
+    set(grpcpp_channelz_COMPONENT "Devel")
+  endif()
   install(TARGETS grpcpp_channelz EXPORT gRPCTargets
+    COMPONENT ${grpcpp_channelz_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -5013,6 +5164,7 @@ add_library(http2_client_main
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/test.grpc.pb.h
   test/cpp/interop/http2_client.cc
 )
+set_target_properties(http2_client_main PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(http2_client_main PROPERTIES COMPILE_PDB_NAME "http2_client_main"
@@ -5020,6 +5172,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/http2_client_main.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5076,6 +5229,7 @@ add_library(interop_client_helper
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/messages.grpc.pb.h
   test/cpp/interop/client_helper.cc
 )
+set_target_properties(interop_client_helper PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(interop_client_helper PROPERTIES COMPILE_PDB_NAME "interop_client_helper"
@@ -5083,6 +5237,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interop_client_helper.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5142,6 +5297,7 @@ add_library(interop_client_main
   test/cpp/interop/client.cc
   test/cpp/interop/interop_client.cc
 )
+set_target_properties(interop_client_main PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(interop_client_main PROPERTIES COMPILE_PDB_NAME "interop_client_main"
@@ -5149,6 +5305,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interop_client_main.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5202,6 +5359,7 @@ if (gRPC_BUILD_TESTS)
 add_library(interop_server_helper
   test/cpp/interop/server_helper.cc
 )
+set_target_properties(interop_server_helper PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(interop_server_helper PROPERTIES COMPILE_PDB_NAME "interop_server_helper"
@@ -5209,6 +5367,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interop_server_helper.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5263,6 +5422,7 @@ add_library(interop_server_lib
   ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/testing/test.grpc.pb.h
   test/cpp/interop/interop_server.cc
 )
+set_target_properties(interop_server_lib PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(interop_server_lib PROPERTIES COMPILE_PDB_NAME "interop_server_lib"
@@ -5270,6 +5430,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interop_server_lib.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5323,6 +5484,7 @@ if (gRPC_BUILD_TESTS)
 add_library(interop_server_main
   test/cpp/interop/interop_server_bootstrap.cc
 )
+set_target_properties(interop_server_main PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(interop_server_main PROPERTIES COMPILE_PDB_NAME "interop_server_main"
@@ -5330,6 +5492,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interop_server_main.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5408,6 +5571,7 @@ add_library(qps
   test/cpp/qps/server_sync.cc
   test/cpp/qps/usage_timer.cc
 )
+set_target_properties(qps PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(qps PROPERTIES COMPILE_PDB_NAME "qps"
@@ -5415,6 +5579,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qps.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5478,6 +5643,7 @@ if (gRPC_BUILD_CSHARP_EXT)
 add_library(grpc_csharp_ext SHARED
   src/csharp/ext/grpc_csharp_ext.c
 )
+set_target_properties(grpc_csharp_ext PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(grpc_csharp_ext PROPERTIES COMPILE_PDB_NAME "grpc_csharp_ext"
@@ -5485,6 +5651,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc_csharp_ext.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5518,7 +5685,14 @@ target_link_libraries(grpc_csharp_ext
 
 
 if (gRPC_INSTALL)
+  get_target_property(grpc_csharp_ext_TYPE grpc_csharp_ext TYPE)
+  if("${grpc_csharp_ext_TYPE}" STREQUAL "SHARED_LIBRARY")
+    set(grpc_csharp_ext_COMPONENT "Library")
+  else()
+    set(grpc_csharp_ext_COMPONENT "Devel")
+  endif()
   install(TARGETS grpc_csharp_ext EXPORT gRPCTargets
+    COMPONENT ${grpc_csharp_ext_COMPONENT}
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -5540,6 +5714,7 @@ add_library(upb
   third_party/upb/upb/table.c
   third_party/upb/upb/upb.c
 )
+set_target_properties(upb PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(upb PROPERTIES COMPILE_PDB_NAME "upb"
@@ -5547,6 +5722,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5583,6 +5759,7 @@ if (gRPC_BUILD_TESTS)
 add_library(bad_client_test
   test/core/bad_client/bad_client.cc
 )
+set_target_properties(bad_client_test PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(bad_client_test PROPERTIES COMPILE_PDB_NAME "bad_client_test"
@@ -5590,6 +5767,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bad_client_test.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5628,6 +5806,7 @@ if (gRPC_BUILD_TESTS)
 add_library(bad_ssl_test_server
   test/core/bad_ssl/server_common.cc
 )
+set_target_properties(bad_ssl_test_server PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(bad_ssl_test_server PROPERTIES COMPILE_PDB_NAME "bad_ssl_test_server"
@@ -5635,6 +5814,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bad_ssl_test_server.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5752,6 +5932,7 @@ add_library(end2end_tests
   test/core/end2end/tests/write_buffering.cc
   test/core/end2end/tests/write_buffering_at_end.cc
 )
+set_target_properties(end2end_tests PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(end2end_tests PROPERTIES COMPILE_PDB_NAME "end2end_tests"
@@ -5759,6 +5940,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/end2end_tests.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -5876,6 +6058,7 @@ add_library(end2end_nosec_tests
   test/core/end2end/tests/write_buffering.cc
   test/core/end2end/tests/write_buffering_at_end.cc
 )
+set_target_properties(end2end_nosec_tests PROPERTIES VERSION ${PACKAGE_VERSION})
 
 if(WIN32 AND MSVC)
   set_target_properties(end2end_nosec_tests PROPERTIES COMPILE_PDB_NAME "end2end_nosec_tests"
@@ -5883,6 +6066,7 @@ if(WIN32 AND MSVC)
   )
   if (gRPC_INSTALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/end2end_nosec_tests.pdb
+      COMPONENT Devel
       DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
     )
   endif()
@@ -13498,6 +13682,7 @@ target_link_libraries(grpc_cpp_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_cpp_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13537,6 +13722,7 @@ target_link_libraries(grpc_csharp_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_csharp_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13614,6 +13800,7 @@ target_link_libraries(grpc_node_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_node_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13653,6 +13840,7 @@ target_link_libraries(grpc_objective_c_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_objective_c_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13692,6 +13880,7 @@ target_link_libraries(grpc_php_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_php_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13731,6 +13920,7 @@ target_link_libraries(grpc_python_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_python_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -13770,6 +13960,7 @@ target_link_libraries(grpc_ruby_plugin
 
 if (gRPC_INSTALL)
   install(TARGETS grpc_ruby_plugin EXPORT gRPCTargets
+    COMPONENT Devel
     RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
     LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
@@ -18923,6 +19114,7 @@ endif (gRPC_BUILD_TESTS)
 
 if (gRPC_INSTALL)
   install(EXPORT gRPCTargets
+    COMPONENT Devel
     DESTINATION ${gRPC_INSTALL_CMAKEDIR}
     NAMESPACE gRPC::
   )
@@ -18932,9 +19124,16 @@ foreach(_config gRPCConfig gRPCConfigVersion)
   configure_file(cmake/${_config}.cmake.in
     ${_config}.cmake @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${_config}.cmake
+    COMPONENT Devel
     DESTINATION ${gRPC_INSTALL_CMAKEDIR}
   )
 endforeach()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/etc/roots.pem
+  COMPONENT Devel
   DESTINATION ${gRPC_INSTALL_SHAREDIR})
+
+include( "cmake/cpack.cmake" )
+
+# This must always be last!
+include(CPack)
